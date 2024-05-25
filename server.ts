@@ -21,3 +21,5 @@ app.listen(process.env.PORT, () => {
     console.log(`Server is connected with ${process.env.PORT}`);
     connectDB();
 });
+
+export { app };
