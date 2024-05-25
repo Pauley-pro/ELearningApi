@@ -2,14 +2,13 @@
   "name": "server",
   "version": "1.0.0",
   "description": "",
-  "type": "commonjs",
-  "main": "build/server.mjs",
+  "main": "build/server.js",
   "engines": {
     "node": "18.x"
   },
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only server.ts",
-    "start": "node build/server.mjs",
+    "start": "node build/server.js",
     "build": "tsc"
   },
   "keywords": [],
