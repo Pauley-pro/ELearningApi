@@ -22,4 +22,3 @@ app.listen(process.env.PORT, () => {
     connectDB();
 });
 
-export { app };
