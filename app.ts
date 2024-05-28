@@ -22,7 +22,7 @@ app.use(cookieParser());
 // cors => cross origin resource sharing
 app.use(
     cors({
-        origin: "https://e-learning-nine-roan.vercel.app",
+        origin: "https://e-learning-client-phi.vercel.app",
         credentials: true,
     })
 );
