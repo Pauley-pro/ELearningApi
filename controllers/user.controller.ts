@@ -142,52 +142,46 @@ export const loginUser = CatchAsyncError(async(req:Request,res:Response,next:Nex
 });
 
 // logout user
-export const logoutUser = CatchAsyncError(async(req:Request, res:Response, next:NextFunction) => {
-    try{
+export const logoutUser = CatchAsyncError(async (req: Request, res: Response, next: NextFunction) => {
+    try {
         res.cookie("access_token", "", { maxAge: 1 });
         res.cookie("refresh_token", "", { maxAge: 1 });
-        const userId = req.user?._id || "";
-        redis.del(userId);
         res.status(200).json({
-        success: true,
-        message: "Logged out successfully",
-    }); 
-    } catch (error:any) {
+            success: true,
+            message: "Logged out successfully",
+        });
+    } catch (error: any) {
         return next(new ErrorHandler(error.message, 400));
     }
 });
 
 // update access token
-export const UpdateAccessToken = CatchAsyncError(async(req:Request, res:Response, next:NextFunction) => {
-    try{
+export const UpdateAccessToken = CatchAsyncError(async (req: Request, res: Response, next: NextFunction) => {
+    try {
         const refresh_token = req.cookies.refresh_token as string;
         const decoded = jwt.verify(refresh_token, process.env.REFRESH_TOKEN as string) as JwtPayload;
         const message = "Could not refresh token";
-        if (!decoded){
+        if (!decoded) {
             return next(new ErrorHandler(message, 400));
-        } 
-        const session = await redis.get(decoded.id as string);
-        if (!session){
+        }
+        const user = await userModel.findById(decoded.id);
+        if (!user) {
             return next(new ErrorHandler("Please, login to access this resource!", 400));
         }
-        const user = JSON.parse(session);
-        const accessToken = jwt.sign({id: user._id}, process.env.ACCESS_TOKEN as string,{
-            expiresIn:"5m",
+        const accessToken = jwt.sign({ id: user._id }, process.env.ACCESS_TOKEN as string, {
+            expiresIn: "5m",
         });
-        const refreshToken = jwt.sign({id:user._id}, process.env.REFRESH_TOKEN as string,{
-            expiresIn:"3d",
+        const refreshToken = jwt.sign({ id: user._id }, process.env.REFRESH_TOKEN as string, {
+            expiresIn: "3d",
         });
         req.user = user;
         res.cookie("access_token", accessToken, accessTokenOptions);
         res.cookie("refresh_token", refreshToken, refreshTokenOptions);
-
-        await redis.set(user._id, JSON.stringify(user), "EX", 604800); // 7days
-
         return next();
-    } catch (error:any){
+    } catch (error: any) {
         return next(new ErrorHandler(error.message, 400));
     }
-})
+});
 
 // get user info
 export const getUserInfo = CatchAsyncError(async(req:Request, res:Response, next:NextFunction) => {
@@ -237,15 +231,14 @@ export const updateUserInfo = CatchAsyncError(async(req:Request, res:Response, n
             user.name = name;
         }
         await user?.save();
-        await redis.set(userId,JSON.stringify(user));
         res.status(201).json({
-            success:true,
+            success: true,
             user,
         });
-    } catch(error:any) {
+    } catch (error: any) {
         return next(new ErrorHandler(error.message, 400));
     }
-})
+});
 
 // update user password
 interface IUpdatePassword{
@@ -269,15 +262,14 @@ export const updatePassword = CatchAsyncError(async(req:Request, res:Response, n
         }
         user.password = newPassword;
         await user.save();
-        await redis.set(req.user?._id, JSON.stringify(user));
         res.status(201).json({
             success: true,
             user,
         });
-    } catch(error:any){
+    } catch (error: any) {
         return next(new ErrorHandler(error.message, 400));
     }
-})
+});
 
 // update profile picture
 interface IUpdateProfilePicture{
@@ -289,39 +281,37 @@ export const updateProfilePicture = CatchAsyncError(async(req:Request, res:Respo
         const  { avatar } = req.body as IUpdateProfilePicture;
         const userId = req.user?._id;
         const user = await userModel.findById(userId);
-        if(avatar && user){
+        if (avatar && user) {
             // if user has one avatar then, call this if
-            if(user?.avatar?.public_id){
+            if (user.avatar?.public_id) {
                 // first delete the old image
-                await cloudinary.v2.uploader.destroy(user?.avatar?.public_id);
+                await cloudinary.v2.uploader.destroy(user.avatar.public_id);
 
-                const myCloud = await cloudinary.v2.uploader.upload(avatar,{
-                    folder:"avatars",
+                const myCloud = await cloudinary.v2.uploader.upload(avatar, {
+                    folder: "avatars",
                     width: 150,
                 });
                 user.avatar = {
                     public_id: myCloud.public_id,
                     url: myCloud.secure_url,
-                }
-
-            }else{
-                const myCloud = await cloudinary.v2.uploader.upload(avatar,{
-                    folder:"avatars",
+                };
+            } else {
+                const myCloud = await cloudinary.v2.uploader.upload(avatar, {
+                    folder: "avatars",
                     width: 150,
                 });
                 user.avatar = {
                     public_id: myCloud.public_id,
                     url: myCloud.secure_url,
-                }
+                };
             }
         }
         await user?.save();
-        await redis.set(userId, JSON.stringify(user));
         res.status(200).json({
             success: true,
             user,
-        })
-    } catch(error:any){
+        });
+    } catch (error: any) {
         return next(new ErrorHandler(error.message, 400));
     }
 });
@@ -357,20 +347,19 @@ export const updateUserRole = CatchAsyncError(async(req:Request, res:Response, n
 
 
 // delete user ---- only for admin
-export const deleteUser = CatchAsyncError(async(req:Request, res:Response, next:NextFunction) => {
-    try{
-        const {id} = req.params;
+export const deleteUser = CatchAsyncError(async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { id } = req.params;
         const user = await userModel.findById(id);
-        if(!user){
+        if (!user) {
             return next(new ErrorHandler("User not found", 404));
         }
-        await user.deleteOne({id});
-        await redis.del(id);
+        await user.deleteOne();
         res.status(200).json({
             success: true,
-            message: "User deleted successfully"
+            message: "User deleted successfully",
         });
-    } catch(error:any){
+    } catch (error: any) {
         return next(new ErrorHandler(error.message, 400));
     }
 });

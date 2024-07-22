@@ -1,7 +1,6 @@
 require("dotenv").config();
 import { Response } from "express";
 import { IUser } from "../models/user.model";
-import { redis } from "./redis";
 
 interface ITokenOptions {
     expires: Date;
@@ -35,15 +34,6 @@ export const refreshTokenOptions: ITokenOptions = {
 export const sendToken = async (user: IUser, statusCode: number, res: Response) => {
     const accessToken = user.SignAccessToken();
     const refreshToken = user.SignRefreshToken();
-
-    try {
-        // Upload session to Redis
-        await redis.set(user._id, JSON.stringify(user));
-        console.log('User session set in Redis');
-    } catch (err) {
-        console.error('Error setting user session in Redis:', err);
-        return res.status(500).json({ success: false, message: 'Internal Server Error' });
-    }
 
     res.cookie("access_token", accessToken, accessTokenOptions);
     res.cookie("refresh_token", refreshToken, refreshTokenOptions);

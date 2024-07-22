@@ -4,6 +4,7 @@ import ErrorHandler from "../utils/ErrorHandler";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { redis } from "../utils/redis";
 import { UpdateAccessToken } from "../controllers/user.controller";
+import userModel from "../models/user.model";
 
 // authenticated user
 export const isAuthenticated = CatchAsyncError(async (req: Request, res: Response, next: NextFunction) => {
@@ -23,11 +24,11 @@ export const isAuthenticated = CatchAsyncError(async (req: Request, res: Respons
             return next(error);
         }
     } else {
-        const user = await redis.get(decoded.id);
+        const user = await userModel.findById(decoded.id);
         if (!user) {
             return next(new ErrorHandler("Please, login to access this resource!", 400));
         }
-        req.user = JSON.parse(user);
+        req.user = user;
         next();
     }
 
