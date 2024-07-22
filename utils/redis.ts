@@ -3,30 +3,27 @@ require('dotenv').config();
 
 const redisClient = () => {
     if (process.env.REDIS_URL) {
-        console.log(`Connecting to Redis...`);
+        console.log('Connecting to Redis...');
 
         const redis = new Redis(process.env.REDIS_URL, {
-            enableOfflineQueue: true, // Enable offline queueing
+            enableOfflineQueue: true,
             retryStrategy: (times) => {
+                console.log(`Redis client reconnect attempt: ${times}`);
                 // Exponential backoff for retry strategy
                 return Math.min(times * 50, 2000);
             },
         });
 
         redis.on('error', (err) => {
-            console.error('Redis error:', err);
+            console.error('Redis connection error:', err);
         });
 
         redis.on('connect', () => {
             console.log('Connected to Redis');
-
-            // Set memory limits and eviction policy programmatically
-            redis.config('SET', 'maxmemory', '256mb').catch(console.error);
-            redis.config('SET', 'maxmemory-policy', 'allkeys-lru').catch(console.error);
         });
 
         redis.on('reconnecting', () => {
-            console.log('Reconnecting to Redis');
+            console.log('Redis client reconnecting');
         });
 
         return redis;
