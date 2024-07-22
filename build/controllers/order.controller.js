@@ -13,7 +13,6 @@ const ejs_1 = __importDefault(require("ejs"));
 const sendMail_1 = __importDefault(require("../utils/sendMail"));
 const notification_model_1 = __importDefault(require("../models/notification.model"));
 const order_service_1 = require("../services/order.service");
-const redis_1 = require("../utils/redis");
 require("dotenv").config();
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 // create order
@@ -66,7 +65,6 @@ exports.createOrder = (0, catchAsyncError_1.CatchAsyncError)(async (req, res, ne
             return next(new ErrorHandler_1.default(error.message, 500));
         }
         user?.courses.push(course?._id);
-        await redis_1.redis.set(req.user?._id, JSON.stringify(user));
         await user?.save();
         await notification_model_1.default.create({
             user: user?._id,

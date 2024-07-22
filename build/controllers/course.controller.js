@@ -9,7 +9,6 @@ const ErrorHandler_1 = __importDefault(require("../utils/ErrorHandler"));
 const cloudinary_1 = __importDefault(require("cloudinary"));
 const course_service_1 = require("../services/course.service");
 const course_model_1 = __importDefault(require("../models/course.model"));
-const redis_1 = require("../utils/redis");
 const mongoose_1 = __importDefault(require("mongoose"));
 const ejs_1 = __importDefault(require("ejs"));
 const path_1 = __importDefault(require("path"));
@@ -77,22 +76,14 @@ exports.editCourse = (0, catchAsyncError_1.CatchAsyncError)(async (req, res, nex
 exports.getSingleCourse = (0, catchAsyncError_1.CatchAsyncError)(async (req, res, next) => {
     try {
         const courseId = req.params.id;
-        const isCacheExist = await redis_1.redis.get(courseId);
-        if (isCacheExist) {
-            const course = JSON.parse(isCacheExist);
-            res.status(200).json({
-                success: true,
-                course,
-            });
+        const course = await course_model_1.default.findById(courseId).select("-courseData.videoUrl -courseData.suggestion -courseData.questions -courseData.links");
+        if (!course) {
+            return next(new ErrorHandler_1.default("Course not found", 404));
         }
-        else {
-            const course = await course_model_1.default.findById(req.params.id).select("-courseData.videoUrl -courseData.suggestion -courseData.questions -courseData.links");
-            await redis_1.redis.set(courseId, JSON.stringify(course), "EX", 604800); // 7days
-            res.status(200).json({
-                success: true,
-                course,
-            });
-        }
+        res.status(200).json({
+            success: true,
+            course,
+        });
     }
     catch (error) {
         return next(new ErrorHandler_1.default(error.message, 500));
@@ -250,15 +241,14 @@ exports.addReview = (0, catchAsyncError_1.CatchAsyncError)(async (req, res, next
             avg += rev.rating;
         });
         if (course) {
-            course.ratings = avg / course.reviews.length; // one example....we have two reviews, one is 5, another is 4. So, math working like this 9/2 = 4.5
+            course.ratings = avg / course.reviews.length;
         }
         await course?.save();
-        await redis_1.redis.set(courseId, JSON.stringify(course), "EX", 604800); // 7 days
         // create notification
         await notification_model_1.default.create({
             user: req.user?._id,
-            title: "New Review Receive",
-            message: `You have a new question in ${course?.name}`,
+            title: "New Review Received",
+            message: `You have a new review in ${course?.name}`,
         });
         res.status(200).json({
             success: true,
@@ -276,7 +266,7 @@ exports.addReplyToReview = (0, catchAsyncError_1.CatchAsyncError)(async (req, re
         if (!course) {
             return next(new ErrorHandler_1.default("Course not found", 404));
         }
-        const review = course?.reviews?.find((rev) => rev._id.toString() === reviewId);
+        const review = course.reviews.find((rev) => rev._id.toString() === reviewId);
         if (!review) {
             return next(new ErrorHandler_1.default("Review not found", 404));
         }
@@ -289,9 +279,8 @@ exports.addReplyToReview = (0, catchAsyncError_1.CatchAsyncError)(async (req, re
         if (!review.commentReplies) {
             review.commentReplies = [];
         }
-        review.commentReplies?.push(replyData);
-        await course?.save();
-        await redis_1.redis.set(courseId, JSON.stringify(course), "EX", 604800); // 7days
+        review.commentReplies.push(replyData);
+        await course.save();
         res.status(200).json({
             success: true,
             course,
@@ -318,8 +307,7 @@ exports.deleteCourse = (0, catchAsyncError_1.CatchAsyncError)(async (req, res, n
         if (!course) {
             return next(new ErrorHandler_1.default("Course not found", 404));
         }
-        await course.deleteOne({ id });
-        await redis_1.redis.del(id);
+        await course.deleteOne({ _id: id });
         res.status(200).json({
             success: true,
             message: "Course deleted successfully"
