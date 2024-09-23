@@ -144,8 +144,18 @@ export const loginUser = CatchAsyncError(async (req: Request, res: Response, nex
 // logout user
 export const logoutUser = CatchAsyncError(async (req: Request, res: Response, next: NextFunction) => {
     try {
-        res.cookie("access_token", "", { maxAge: 1 });
-        res.cookie("refresh_token", "", { maxAge: 1 });
+        res.cookie("access_token", "", {
+            maxAge: 1, // Set to expire immediately
+            httpOnly: true, // Prevent client-side access
+            secure: process.env.NODE_ENV === "production", // Ensure cookies are only sent over HTTPS in production
+            sameSite: "strict", // Adjust based on your requirements, could be "Lax" if you allow cross-site cookies
+        });
+        res.cookie("refresh_token", "", {
+            maxAge: 1,
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "strict",
+        });
         res.status(200).json({
             success: true,
             message: "Logged out successfully",
