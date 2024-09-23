@@ -109,14 +109,25 @@ exports.loginUser = (0, catchAsyncError_1.CatchAsyncError)(async (req, res, next
         (0, jwt_1.sendToken)(user, 200, res);
     }
     catch (error) {
+        ``;
         return next(new ErrorHandler_1.default(error.message, 400));
     }
 });
 // logout user
 exports.logoutUser = (0, catchAsyncError_1.CatchAsyncError)(async (req, res, next) => {
     try {
-        res.cookie("access_token", "", { maxAge: 1 });
-        res.cookie("refresh_token", "", { maxAge: 1 });
+        res.cookie("access_token", "", {
+            maxAge: 1,
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "strict", // Adjust based on your requirements, could be "Lax" if you allow cross-site cookies
+        });
+        res.cookie("refresh_token", "", {
+            maxAge: 1,
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "strict",
+        });
         res.status(200).json({
             success: true,
             message: "Logged out successfully",
