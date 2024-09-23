@@ -116,8 +116,21 @@ exports.loginUser = (0, catchAsyncError_1.CatchAsyncError)(async (req, res, next
 // logout user
 exports.logoutUser = (0, catchAsyncError_1.CatchAsyncError)(async (req, res, next) => {
     try {
-        res.clearCookie("access_token");
-        res.clearCookie("refresh_token");
+        // Clear the access and refresh tokens
+        res.cookie('accessToken', '', {
+            httpOnly: true,
+            sameSite: 'none',
+            secure: true,
+            path: '/',
+            expires: new Date(0) // Expire the cookie immediately
+        });
+        res.cookie('refreshToken', '', {
+            httpOnly: true,
+            sameSite: 'none',
+            secure: true,
+            path: '/',
+            expires: new Date(0) // Expire the cookie immediately
+        });
         res.status(200).json({
             success: true,
             message: "Logged out successfully",
