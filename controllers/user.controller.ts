@@ -135,13 +135,24 @@ export const loginUser = CatchAsyncError(async(req:Request,res:Response,next:Nex
         };
         sendToken(user,200,res);
 
-    } catch (error:any) {
+    } catch (error:any) {``
         return next(new ErrorHandler(error.message, 400));
     }
 });
 
 // logout user
 export const logoutUser = CatchAsyncError(async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      res.clearCookie("token");
+      res.status(200).json({
+        success: true,
+        message: "Logged out successfully",
+    });
+    } catch (error: any) {
+        return next(new ErrorHandler(error.message, 400));
+    }
+  });
+/*export const logoutUser = CatchAsyncError(async (req: Request, res: Response, next: NextFunction) => {
     try {
         res.cookie("access_token", "", { maxAge: 1 });
         res.cookie("refresh_token", "", { maxAge: 1 });
@@ -152,7 +163,7 @@ export const logoutUser = CatchAsyncError(async (req: Request, res: Response, ne
     } catch (error: any) {
         return next(new ErrorHandler(error.message, 400));
     }
-});
+});*/
 
 // update access token
 export const UpdateAccessToken = CatchAsyncError(async (req: Request, res: Response, next: NextFunction) => {
