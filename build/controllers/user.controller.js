@@ -116,18 +116,8 @@ exports.loginUser = (0, catchAsyncError_1.CatchAsyncError)(async (req, res, next
 // logout user
 exports.logoutUser = (0, catchAsyncError_1.CatchAsyncError)(async (req, res, next) => {
     try {
-        res.cookie("access_token", "", {
-            maxAge: 1,
-            httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
-            sameSite: "strict", // Adjust based on your requirements, could be "Lax" if you allow cross-site cookies
-        });
-        res.cookie("refresh_token", "", {
-            maxAge: 1,
-            httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
-            sameSite: "strict",
-        });
+        res.clearCookie("access_token");
+        res.clearCookie("refresh_token");
         res.status(200).json({
             success: true,
             message: "Logged out successfully",
