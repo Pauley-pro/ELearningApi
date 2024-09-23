@@ -39,7 +39,7 @@ export const registrationUser = CatchAsyncError(async (req: Request, res: Respon
         const activationCode = activationToken.activationCode;
         const data = { user: { name: user.name }, activationCode };
         const html = await ejs.renderFile(path.join(__dirname, "../mails/activation-mail.ejs"), data);
-        
+
         try {
             await sendMail({
                 email: user.email,
@@ -79,26 +79,26 @@ export const createActivationToken = (user: any): IActivationToken => {
 };
 
 // activate user
-interface IActivationRequest{
+interface IActivationRequest {
     activation_token: string;
     activation_code: string;
 }
 
-export const activateUser = CatchAsyncError(async(req:Request,res:Response,next:NextFunction) => {
+export const activateUser = CatchAsyncError(async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const {activation_token, activation_code} = req.body as IActivationRequest;
-        const newUser: {user: IUser; activationCode:string} = jwt.verify(
+        const { activation_token, activation_code } = req.body as IActivationRequest;
+        const newUser: { user: IUser; activationCode: string } = jwt.verify(
             activation_token,
             process.env.ACTIVATION_SECRET as string
-        ) as {user: IUser; activationCode:string};
-        
-        if(newUser.activationCode !== activation_code){
-            return next(new ErrorHandler("Invalid activation code",400));
+        ) as { user: IUser; activationCode: string };
+
+        if (newUser.activationCode !== activation_code) {
+            return next(new ErrorHandler("Invalid activation code", 400));
         }
-        const {name,email,password} = newUser.user;
-        const existUser = await userModel.findOne({email});
-        if(existUser){
-            return next(new ErrorHandler("Email alraedy exist",400));
+        const { name, email, password } = newUser.user;
+        const existUser = await userModel.findOne({ email });
+        if (existUser) {
+            return next(new ErrorHandler("Email alraedy exist", 400));
         }
         const user = await userModel.create({
             name,
@@ -106,9 +106,9 @@ export const activateUser = CatchAsyncError(async(req:Request,res:Response,next:
             password,
         });
         res.status(201).json({
-            success:true,
+            success: true,
         })
-    } catch (error:any) {
+    } catch (error: any) {
         return next(new ErrorHandler(error.message, 400));
     }
 });
@@ -119,23 +119,24 @@ interface ILoginRequest {
     password: string;
 }
 
-export const loginUser = CatchAsyncError(async(req:Request,res:Response,next:NextFunction) => {
-    try{
-        const {email, password} = req.body as ILoginRequest; 
-        if(!email || !password){
+export const loginUser = CatchAsyncError(async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { email, password } = req.body as ILoginRequest;
+        if (!email || !password) {
             return next(new ErrorHandler("Please enter email and password", 400));
         };
-        const user = await userModel.findOne({email}).select("+password");
-        if(!user){
+        const user = await userModel.findOne({ email }).select("+password");
+        if (!user) {
             return next(new ErrorHandler("Invalid email or password", 400));
         };
         const isPasswordMatch = await user.comparePassword(password);
-        if(!isPasswordMatch){
+        if (!isPasswordMatch) {
             return next(new ErrorHandler("Invalid email or password", 400));
         };
-        sendToken(user,200,res);
+        sendToken(user, 200, res);
 
-    } catch (error:any) {``
+    } catch (error: any) {
+        ``
         return next(new ErrorHandler(error.message, 400));
     }
 });
@@ -143,15 +144,17 @@ export const loginUser = CatchAsyncError(async(req:Request,res:Response,next:Nex
 // logout user
 export const logoutUser = CatchAsyncError(async (req: Request, res: Response, next: NextFunction) => {
     try {
-      res.clearCookie("token");
-      res.status(200).json({
-        success: true,
-        message: "Logged out successfully",
-    });
+        res.clearCookie("access_token", "", { maxAge: 1 });
+        res.clearCookie("refresh_token", "", { maxAge: 1 });
+        res.status(200).json({
+            success: true,
+            message: "Logged out successfully",
+        });
     } catch (error: any) {
         return next(new ErrorHandler(error.message, 400));
     }
-  });
+});
+
 /*export const logoutUser = CatchAsyncError(async (req: Request, res: Response, next: NextFunction) => {
     try {
         res.cookie("access_token", "", { maxAge: 1 });
@@ -194,50 +197,50 @@ export const UpdateAccessToken = CatchAsyncError(async (req: Request, res: Respo
 });
 
 // get user info
-export const getUserInfo = CatchAsyncError(async(req:Request, res:Response, next:NextFunction) => {
-    try{
+export const getUserInfo = CatchAsyncError(async (req: Request, res: Response, next: NextFunction) => {
+    try {
         const userId = req.user?._id;
         getUserById(userId, res);
-    } catch(error:any) {
+    } catch (error: any) {
         return next(new ErrorHandler(error.message, 400));
     }
 })
 
-interface ISocialAuthBody{
+interface ISocialAuthBody {
     email: string;
     name: string;
     avatar: string;
 }
 
 // social auth
-export const socialAuth = CatchAsyncError(async(req:Request, res:Response, next:NextFunction) => {
-    try{
-        const {email, name, avatar} = req.body as ISocialAuthBody;
-        const user = await userModel.findOne({email});
-        if(!user){
-            const newUser = await userModel.create({email, name, avatar})
+export const socialAuth = CatchAsyncError(async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { email, name, avatar } = req.body as ISocialAuthBody;
+        const user = await userModel.findOne({ email });
+        if (!user) {
+            const newUser = await userModel.create({ email, name, avatar })
             sendToken(newUser, 200, res);
-        } else{
+        } else {
             sendToken(user, 200, res);
         }
-    } catch(error:any) {
+    } catch (error: any) {
         return next(new ErrorHandler(error.message, 400));
     }
 });
 
 // update user info
-interface IUpdateUserInfo{
+interface IUpdateUserInfo {
     name?: string;
     email?: string;
 }
 
-export const updateUserInfo = CatchAsyncError(async(req:Request, res:Response, next:NextFunction) => {
-    try{
+export const updateUserInfo = CatchAsyncError(async (req: Request, res: Response, next: NextFunction) => {
+    try {
         const { name } = req.body as IUpdateUserInfo;
         const userId = req.user?._id;
         const user = await userModel.findById(userId);
-        
-        if(name && user){
+
+        if (name && user) {
             user.name = name;
         }
         await user?.save();
@@ -251,23 +254,23 @@ export const updateUserInfo = CatchAsyncError(async(req:Request, res:Response, n
 });
 
 // update user password
-interface IUpdatePassword{
+interface IUpdatePassword {
     oldPassword: string;
     newPassword: string;
 }
 
-export const updatePassword = CatchAsyncError(async(req:Request, res:Response, next:NextFunction) => {
-    try{
+export const updatePassword = CatchAsyncError(async (req: Request, res: Response, next: NextFunction) => {
+    try {
         const { oldPassword, newPassword } = req.body as IUpdatePassword;
-        if(!oldPassword || !newPassword){
+        if (!oldPassword || !newPassword) {
             return next(new ErrorHandler("Please, enter old and new password", 400))
         }
         const user = await userModel.findById(req.user?._id).select("+password");
-        if(user?.password === undefined){
+        if (user?.password === undefined) {
             return next(new ErrorHandler("Invalid user", 400));
         }
         const isPasswordMatch = await user?.comparePassword(oldPassword);
-        if(!isPasswordMatch){
+        if (!isPasswordMatch) {
             return next(new ErrorHandler("Invalid old password", 400))
         }
         user.password = newPassword;
@@ -282,13 +285,13 @@ export const updatePassword = CatchAsyncError(async(req:Request, res:Response, n
 });
 
 // update profile picture
-interface IUpdateProfilePicture{
+interface IUpdateProfilePicture {
     avatar: string;
 }
 
-export const updateProfilePicture = CatchAsyncError(async(req:Request, res:Response, next:NextFunction) => {
-    try{
-        const  { avatar } = req.body as IUpdateProfilePicture;
+export const updateProfilePicture = CatchAsyncError(async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { avatar } = req.body as IUpdateProfilePicture;
         const userId = req.user?._id;
         const user = await userModel.findById(userId);
         if (avatar && user) {
@@ -327,30 +330,30 @@ export const updateProfilePicture = CatchAsyncError(async(req:Request, res:Respo
 });
 
 // get all users ---- only for admin
-export const getAllUsers = CatchAsyncError(async(req:Request, res:Response, next:NextFunction) => {
-    try{
+export const getAllUsers = CatchAsyncError(async (req: Request, res: Response, next: NextFunction) => {
+    try {
         getAllUsersService(res);
-    } catch(error:any){
+    } catch (error: any) {
         return next(new ErrorHandler(error.message, 400));
     }
 });
 
 // update user role ---- only for Admin
-export const updateUserRole = CatchAsyncError(async(req:Request, res:Response, next:NextFunction) => {
-    try{
+export const updateUserRole = CatchAsyncError(async (req: Request, res: Response, next: NextFunction) => {
+    try {
         const { email, role } = req.body;
         const isUserExist = await userModel.findOne({ email });
-        if (isUserExist){
+        if (isUserExist) {
             const id = isUserExist._id;
             updateUserRoleService(res, id, role);
         }
-        else{
+        else {
             res.status(400).json({
                 success: false,
                 message: "User not found"
             })
         }
-    } catch(error:any){
+    } catch (error: any) {
         return next(new ErrorHandler(error.message, 400));
     }
 });
