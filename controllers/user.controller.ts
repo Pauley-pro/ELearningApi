@@ -143,6 +143,18 @@ export const loginUser = CatchAsyncError(async(req:Request,res:Response,next:Nex
 // logout user
 export const logoutUser = CatchAsyncError(async (req: Request, res: Response, next: NextFunction) => {
     try {
+        res.clearCookie("token");
+        return res.status(200).json({
+          message: "logged out Successfully!",
+        });
+      } catch (error: any) {
+        return next(new ErrorHandler(error.message, 400));
+    }
+});
+
+{/*
+export const logoutUser = CatchAsyncError(async (req: Request, res: Response, next: NextFunction) => {
+    try {
         res.cookie("access_token", "", { maxAge: 1 });
         res.cookie("refresh_token", "", { maxAge: 1 });
         res.status(200).json({
@@ -152,7 +164,8 @@ export const logoutUser = CatchAsyncError(async (req: Request, res: Response, ne
     } catch (error: any) {
         return next(new ErrorHandler(error.message, 400));
     }
-});
+});    
+*/}
 
 // update access token
 export const UpdateAccessToken = CatchAsyncError(async (req: Request, res: Response, next: NextFunction) => {
