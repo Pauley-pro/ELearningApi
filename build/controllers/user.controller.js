@@ -116,16 +116,8 @@ exports.loginUser = (0, catchAsyncError_1.CatchAsyncError)(async (req, res, next
 // logout user
 exports.logoutUser = (0, catchAsyncError_1.CatchAsyncError)(async (req, res, next) => {
     try {
-        res.clearCookie('accessToken', {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'none', // 'None' to work with cross-origin requests
-        });
-        res.clearCookie('refreshToken', {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'none',
-        });
+        res.cookie("access_token", "", { maxAge: 1 });
+        res.cookie("refresh_token", "", { maxAge: 1 });
         res.status(200).json({
             success: true,
             message: "Logged out successfully",
