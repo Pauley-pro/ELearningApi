@@ -30,7 +30,6 @@ export const isAuthenticated = CatchAsyncError(async (req: Request, res: Respons
         req.user = user;
         next();
     }
-
 });
 
 // validate user role
