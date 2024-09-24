@@ -143,12 +143,8 @@ export const loginUser = CatchAsyncError(async(req:Request,res:Response,next:Nex
 // logout user
 export const logoutUser = CatchAsyncError(async (req: Request, res: Response, next: NextFunction) => {
     try {
-        res.cookie("token", null, {
-            expires: new Date(Date.now()),
-            httpOnly: true,
-            sameSite: "none",
-            secure: true,
-          });
+        res.clearCookie('accessToken', { httpOnly: true });
+        res.clearCookie('refreshToken', { httpOnly: true });
         res.status(200).json({
             success: true,
             message: "Logged out successfully",
@@ -157,26 +153,6 @@ export const logoutUser = CatchAsyncError(async (req: Request, res: Response, ne
         return next(new ErrorHandler(error.message, 400));
     }
 });
-
-{/*
-    catchAsyncErrors(async (req, res, next) => {
-    try {
-      res.cookie("token", null, {
-        expires: new Date(Date.now()),
-        httpOnly: true,
-        sameSite: "none",
-        secure: true,
-      });
-      res.status(201).json({
-        success: true,
-        message: "Log out successful!",
-      });
-    } catch (error) {
-      return next(new ErrorHandler(error.message, 500));
-    }
-  })    
-*/}
-
 
 // update access token
 export const UpdateAccessToken = CatchAsyncError(async (req: Request, res: Response, next: NextFunction) => {
