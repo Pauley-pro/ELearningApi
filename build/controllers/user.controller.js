@@ -116,44 +116,28 @@ exports.loginUser = (0, catchAsyncError_1.CatchAsyncError)(async (req, res, next
 // logout user
 exports.logoutUser = (0, catchAsyncError_1.CatchAsyncError)(async (req, res, next) => {
     try {
-        res.cookie("token", null, {
-            expires: new Date(Date.now()),
+        // Clear access and refresh tokens
+        res.cookie("access_token", "", {
             httpOnly: true,
-            sameSite: "none",
-            secure: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "strict",
+            maxAge: 1
         });
-        res.status(201).json({
+        res.cookie("refresh_token", "", {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "strict",
+            maxAge: 1
+        });
+        res.status(200).json({
             success: true,
-            message: "Log out successful!",
+            message: "Logged out successfully",
         });
     }
     catch (error) {
         return next(new ErrorHandler_1.default(error.message, 400));
     }
-    /*try {
-        res.clearCookie("token");
-        return res.status(200).json({
-          message: "logged out Successfully!",
-        });
-      } catch (error: any) {
-        return next(new ErrorHandler(error.message, 400));
-    }*/
 });
-{ /*
-export const logoutUser = CatchAsyncError(async (req: Request, res: Response, next: NextFunction) => {
-    try {
-        res.cookie("access_token", "", { maxAge: 1 });
-        res.cookie("refresh_token", "", { maxAge: 1 });
-        res.status(200).json({
-            success: true,
-            message: "Logged out successfully",
-        });
-    } catch (error: any) {
-        return next(new ErrorHandler(error.message, 400));
-    }
-});
-*/
-}
 // update access token
 exports.UpdateAccessToken = (0, catchAsyncError_1.CatchAsyncError)(async (req, res, next) => {
     try {
