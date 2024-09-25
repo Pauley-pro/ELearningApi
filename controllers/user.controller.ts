@@ -143,21 +143,8 @@ export const loginUser = CatchAsyncError(async(req:Request,res:Response,next:Nex
 // logout user
 export const logoutUser = CatchAsyncError(async (req: Request, res: Response, next: NextFunction) => {
     try {
-        // Clear access and refresh tokens
-        res.cookie("access_token", "", { 
-            httpOnly: true, 
-            secure: process.env.NODE_ENV === "production", 
-            sameSite: "strict", 
-            maxAge: 1 
-        });
-
-        res.cookie("refresh_token", "", { 
-            httpOnly: true, 
-            secure: process.env.NODE_ENV === "production", 
-            sameSite: "strict", 
-            maxAge: 1 
-        });
-
+        res.cookie("access_token", "", { maxAge: 1 });
+        res.cookie("refresh_token", "", { maxAge: 1 });
         res.status(200).json({
             success: true,
             message: "Logged out successfully",
