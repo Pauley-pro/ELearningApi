@@ -1,25 +1,25 @@
-import mongoose,{ Document, Model, Schema } from "mongoose";
+import mongoose, { Document, Model, Schema } from "mongoose";
 import { IUser } from "./user.model";
 
-interface IComment extends Document{
+interface IComment extends Document {
     user: IUser,
     question: string;
     questionReplies?: IComment[];
 }
 
-interface IReview extends Document{
+interface IReview extends Document {
     user: IUser;
     rating: number;
     comment: string;
     commentReplies?: IComment[];
 }
 
-interface ILink extends Document{
+interface ILink extends Document {
     title: string;
     url: string;
 }
 
-interface ICourseData extends Document{
+interface ICourseData extends Document {
     title: string;
     description: string;
     videoUrl: string;
@@ -32,7 +32,7 @@ interface ICourseData extends Document{
     questions: IComment[];
 }
 
-export interface ICourse extends Document{
+export interface ICourse extends Document {
     name: string;
     description: string;
     categories: string;
@@ -46,19 +46,20 @@ export interface ICourse extends Document{
     prerequisites: { title: string }[];
     reviews: IReview[];
     courseData: ICourseData[];
-    ratings?:number;
+    ratings?: number;
     purchased: number;
+    exams: Schema.Types.ObjectId[];
 }
 
 const reviewSchema = new Schema<IReview>({
     user: Object,
-    rating:{
-        type:Number,
+    rating: {
+        type: Number,
         default: 0,
     },
     comment: String,
     commentReplies: [Object],
-},{timestamps:true});
+}, { timestamps: true });
 
 const linkSchema = new Schema<ILink>({
     title: String,
@@ -69,7 +70,7 @@ const commentSchema = new Schema<IComment>({
     user: Object,
     question: String,
     questionReplies: [Object],
-},{timestamps:true});
+}, { timestamps: true });
 
 const courseDataSchema = new Schema<ICourseData>({
     videoUrl: String,
@@ -85,42 +86,42 @@ const courseDataSchema = new Schema<ICourseData>({
 });
 
 const courseSchema = new Schema<ICourse>({
-    name:{
+    name: {
         type: String,
         required: true,
     },
-    description:{
+    description: {
         type: String,
         required: true,
     },
-    categories:{
+    categories: {
         type: String,
         required: true,
     },
-    price:{
+    price: {
         type: Number,
         required: true,
     },
-    estimatedPrice:{
+    estimatedPrice: {
         type: Number,
     },
-    thumbnail:{
-        public_id:{
+    thumbnail: {
+        public_id: {
             type: String
         },
-        url:{
+        url: {
             type: String
         },
     },
-    tags:{
+    tags: {
         type: String,
         required: true
     },
-    level:{
+    level: {
         type: String,
         required: true,
     },
-    demoUrl:{
+    demoUrl: {
         type: String,
         required: true,
     },
@@ -128,15 +129,21 @@ const courseSchema = new Schema<ICourse>({
     prerequisites: [{ title: String }],
     reviews: [reviewSchema],
     courseData: [courseDataSchema],
-    ratings:{
+    ratings: {
         type: Number,
         default: 0,
     },
-    purchased:{
+    purchased: {
         type: Number,
         default: 0,
     },
-},{timestamps:true});
+    exams: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Exam", // Reference to the 'Exam' model
+        }
+    ],
+}, { timestamps: true });
 
 const CourseModel: Model<ICourse> = mongoose.model("Course", courseSchema);
 
