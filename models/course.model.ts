@@ -7,6 +7,15 @@ interface IComment extends Document {
     questionReplies?: IComment[];
 }
 
+interface ICourseTestData extends Document {
+    question: string;
+    correctOption: string;
+    optionA: string;
+    optionB: string;
+    optionC: string;
+    optionD: string;
+}
+
 interface IReview extends Document {
     user: IUser;
     rating: number;
@@ -45,11 +54,38 @@ export interface ICourse extends Document {
     benefits: { title: string }[];
     prerequisites: { title: string }[];
     reviews: IReview[];
+    courseTestData: ICourseTestData[];
     courseData: ICourseData[];
     ratings?: number;
     purchased: number;
-    exams: Schema.Types.ObjectId[];
 }
+
+const courseTestDataSchema = new Schema<ICourseTestData>({
+    question: {
+        type: String,
+        required: true,
+    },
+    correctOption: {
+        type: String,
+        required: true,
+    },
+    optionA: {
+        type: String,
+        required: true,
+    },
+    optionB: {
+        type: String,
+        required: true,
+    },
+    optionC: {
+        type: String,
+        required: true,
+    },
+    optionD: {
+        type: String,
+        required: true,
+    },
+});
 
 const reviewSchema = new Schema<IReview>({
     user: Object,
@@ -127,7 +163,9 @@ const courseSchema = new Schema<ICourse>({
     },
     benefits: [{ title: String }],
     prerequisites: [{ title: String }],
+    questions: []
     reviews: [reviewSchema],
+    courseTestData: [courseTestDataSchema],
     courseData: [courseDataSchema],
     ratings: {
         type: Number,
@@ -137,12 +175,6 @@ const courseSchema = new Schema<ICourse>({
         type: Number,
         default: 0,
     },
-    exams: [
-        {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "Exam", // Reference to the 'Exam' model
-        }
-    ],
 }, { timestamps: true });
 
 const CourseModel: Model<ICourse> = mongoose.model("Course", courseSchema);
