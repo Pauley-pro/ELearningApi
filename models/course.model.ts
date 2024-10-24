@@ -163,7 +163,6 @@ const courseSchema = new Schema<ICourse>({
     },
     benefits: [{ title: String }],
     prerequisites: [{ title: String }],
-    questions: []
     reviews: [reviewSchema],
     courseTestData: [courseTestDataSchema],
     courseData: [courseDataSchema],
