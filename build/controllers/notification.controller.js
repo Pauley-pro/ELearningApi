@@ -32,7 +32,7 @@ exports.updateNotification = (0, catchAsyncError_1.CatchAsyncError)(async (req, 
             notification.status ? notification.status = "read" : notification?.status;
         }
         await notification.save();
-        const notifications = await notification_model_1.default.find().sort({ craetedAt: -1 });
+        const notifications = await notification_model_1.default.find().sort({ createdAt: -1 });
         res.status(201).json({
             success: true,
             notifications,

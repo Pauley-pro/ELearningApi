@@ -24,6 +24,32 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = __importStar(require("mongoose"));
+const courseTestDataSchema = new mongoose_1.Schema({
+    question: {
+        type: String,
+        required: true,
+    },
+    correctOption: {
+        type: String,
+        required: true,
+    },
+    optionA: {
+        type: String,
+        required: true,
+    },
+    optionB: {
+        type: String,
+        required: true,
+    },
+    optionC: {
+        type: String,
+        required: true,
+    },
+    optionD: {
+        type: String,
+        required: true,
+    },
+});
 const reviewSchema = new mongoose_1.Schema({
     user: Object,
     rating: {
@@ -97,6 +123,7 @@ const courseSchema = new mongoose_1.Schema({
     benefits: [{ title: String }],
     prerequisites: [{ title: String }],
     reviews: [reviewSchema],
+    courseTestData: [courseTestDataSchema],
     courseData: [courseDataSchema],
     ratings: {
         type: Number,
