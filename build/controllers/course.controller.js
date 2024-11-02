@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.generateVideoUrl = exports.deleteCourse = exports.getAllCoursesByAdmin = exports.addReplyToReview = exports.addReview = exports.addAnswer = exports.addQuestion = exports.getCourseByUser = exports.getAllCourses = exports.getSingleCourse = exports.editCourse = exports.uploadCourse = void 0;
+exports.generateVideoUrl = exports.deleteCourse = exports.getAllCoursesByAdmin = exports.addReplyToReview = exports.addReview = exports.addAnswer = exports.addQuestion = exports.getCourseByUser = exports.getAllCourses = exports.evaluateTest = exports.getSingleCourse = exports.editCourse = exports.uploadCourse = void 0;
 const catchAsyncError_1 = require("../middleware/catchAsyncError");
 const ErrorHandler_1 = __importDefault(require("../utils/ErrorHandler"));
 const cloudinary_1 = __importDefault(require("cloudinary"));
@@ -76,10 +76,13 @@ exports.editCourse = (0, catchAsyncError_1.CatchAsyncError)(async (req, res, nex
 exports.getSingleCourse = (0, catchAsyncError_1.CatchAsyncError)(async (req, res, next) => {
     try {
         const courseId = req.params.id;
-        const course = await course_model_1.default.findById(courseId).select("-courseData.videoUrl -courseData.suggestion -courseData.questions -courseData.links");
+        const course = await course_model_1.default.findById(courseId)
+            .select("-courseData.videoUrl -courseData.suggestion -courseData.questions -courseData.links")
+            .populate("courseTestData");
         if (!course) {
             return next(new ErrorHandler_1.default("Course not found", 404));
         }
+        // console.log("Course Test Data:", course.courseTestData);
         res.status(200).json({
             success: true,
             course,
@@ -87,6 +90,38 @@ exports.getSingleCourse = (0, catchAsyncError_1.CatchAsyncError)(async (req, res
     }
     catch (error) {
         return next(new ErrorHandler_1.default(error.message, 500));
+    }
+});
+exports.evaluateTest = (0, catchAsyncError_1.CatchAsyncError)(async (req, res, next) => {
+    const { courseId, userAnswers } = req.body;
+    const course = await course_model_1.default.findById(courseId);
+    if (!course) {
+        return next(new ErrorHandler_1.default("Course not found", 404));
+    }
+    let score = 0;
+    // Assuming courseTestData is available in course
+    const { courseTestData } = course;
+    courseTestData.forEach((testData, index) => {
+        if (testData.correctOption === userAnswers[index]) {
+            score++;
+        }
+    });
+    // Check if the student scored 100%
+    const passed = score === courseTestData.length;
+    if (passed) {
+        // Logic to issue a certificate can be added here
+        return res.status(200).json({
+            success: true,
+            passed,
+            message: "Congratulations! You've passed the test and can receive your certificate.",
+        });
+    }
+    else {
+        return res.status(200).json({
+            success: false,
+            passed,
+            message: "You did not pass the test. Please try again.",
+        });
     }
 });
 // get all courses ---without purchasing
@@ -111,6 +146,10 @@ exports.getCourseByUser = (0, catchAsyncError_1.CatchAsyncError)(async (req, res
         if (!courseExists) {
             return next(new ErrorHandler_1.default("You are not eligible to access this course", 404));
         }
+        /*const course = await CourseModel.findById(courseId).select('courseData courseTestData'); // Select specific fields
+        const content = course?.courseData;
+        const courseTestData = course?.courseTestData; // Adjust this line based on your actual data structure
+        console.log("Course Test Data:", courseTestData);*/
         const course = await course_model_1.default.findById(courseId);
         const content = course?.courseData;
         res.status(200).json({

@@ -78,11 +78,14 @@ export const editCourse = CatchAsyncError(async (req: Request, res: Response, ne
 export const getSingleCourse = CatchAsyncError(async (req: Request, res: Response, next: NextFunction) => {
     try {
         const courseId = req.params.id;
-        const course = await CourseModel.findById(courseId).select("-courseData.videoUrl -courseData.suggestion -courseData.questions -courseData.links");
+        const course = await CourseModel.findById(courseId)
+        .select("-courseData.videoUrl -courseData.suggestion -courseData.questions -courseData.links")
+        .populate("courseTestData");
         
         if (!course) {
             return next(new ErrorHandler("Course not found", 404));
         }
+        // console.log("Course Test Data:", course.courseTestData);
 
         res.status(200).json({
             success: true,
@@ -90,6 +93,44 @@ export const getSingleCourse = CatchAsyncError(async (req: Request, res: Respons
         });
     } catch (error: any) {
         return next(new ErrorHandler(error.message, 500));
+    }
+});
+
+export const evaluateTest = CatchAsyncError(async (req: Request, res: Response, next: NextFunction) => {
+    const { courseId, userAnswers } = req.body;
+
+    const course = await CourseModel.findById(courseId);
+    if (!course) {
+        return next(new ErrorHandler("Course not found", 404));
+    }
+
+    let score = 0;
+
+    // Assuming courseTestData is available in course
+    const { courseTestData } = course;
+
+    courseTestData.forEach((testData, index) => {
+        if (testData.correctOption === userAnswers[index]) {
+            score++;
+        }
+    });
+
+    // Check if the student scored 100%
+    const passed = score === courseTestData.length;
+
+    if (passed) {
+        // Logic to issue a certificate can be added here
+        return res.status(200).json({
+            success: true,
+            passed,
+            message: "Congratulations! You've passed the test and can receive your certificate.",
+        });
+    } else {
+        return res.status(200).json({
+            success: false,
+            passed,
+            message: "You did not pass the test. Please try again.",
+        });
     }
 });
 
@@ -115,8 +156,14 @@ export const getCourseByUser = CatchAsyncError(async (req: Request, res: Respons
         if (!courseExists) {
             return next(new ErrorHandler("You are not eligible to access this course", 404));
         }
+        /*const course = await CourseModel.findById(courseId).select('courseData courseTestData'); // Select specific fields
+        const content = course?.courseData;
+        const courseTestData = course?.courseTestData; // Adjust this line based on your actual data structure
+        console.log("Course Test Data:", courseTestData);*/
+
         const course = await CourseModel.findById(courseId);
         const content = course?.courseData;
+
         res.status(200).json({
             success: true,
             content,
