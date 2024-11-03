@@ -13,7 +13,7 @@ courseRouter.get("/get-course/:id", course_controller_1.getSingleCourse);
 courseRouter.get("/get-courses", course_controller_1.getAllCourses);
 courseRouter.get("/get-admin-courses", auth_1.isAuthenticated, (0, auth_1.authorizeRoles)("admin"), course_controller_1.getAllCoursesByAdmin);
 courseRouter.get("/get-course-content/:id", auth_1.isAuthenticated, course_controller_1.getCourseByUser);
-courseRouter.post("/evaluate-test", auth_1.isAuthenticated, course_controller_1.evaluateTest);
+// courseRouter.post("/evaluate-test", isAuthenticated, evaluateTest);
 courseRouter.put("/add-question", auth_1.isAuthenticated, course_controller_1.addQuestion);
 courseRouter.put("/add-answer", auth_1.isAuthenticated, course_controller_1.addAnswer);
 courseRouter.put("/add-review/:id", auth_1.isAuthenticated, course_controller_1.addReview);

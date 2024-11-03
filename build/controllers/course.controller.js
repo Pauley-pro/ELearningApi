@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.generateVideoUrl = exports.deleteCourse = exports.getAllCoursesByAdmin = exports.addReplyToReview = exports.addReview = exports.addAnswer = exports.addQuestion = exports.getCourseByUser = exports.getAllCourses = exports.evaluateTest = exports.getSingleCourse = exports.editCourse = exports.uploadCourse = void 0;
+exports.generateVideoUrl = exports.deleteCourse = exports.getAllCoursesByAdmin = exports.addReplyToReview = exports.addReview = exports.addAnswer = exports.addQuestion = exports.getCourseByUser = exports.getAllCourses = exports.getSingleCourse = exports.editCourse = exports.uploadCourse = void 0;
 const catchAsyncError_1 = require("../middleware/catchAsyncError");
 const ErrorHandler_1 = __importDefault(require("../utils/ErrorHandler"));
 const cloudinary_1 = __importDefault(require("cloudinary"));
@@ -92,22 +92,28 @@ exports.getSingleCourse = (0, catchAsyncError_1.CatchAsyncError)(async (req, res
         return next(new ErrorHandler_1.default(error.message, 500));
     }
 });
-exports.evaluateTest = (0, catchAsyncError_1.CatchAsyncError)(async (req, res, next) => {
+/*export const evaluateTest = CatchAsyncError(async (req: Request, res: Response, next: NextFunction) => {
     const { courseId, userAnswers } = req.body;
-    const course = await course_model_1.default.findById(courseId);
+
+    const course = await CourseModel.findById(courseId);
     if (!course) {
-        return next(new ErrorHandler_1.default("Course not found", 404));
+        return next(new ErrorHandler("Course not found", 404));
     }
+
     let score = 0;
+
     // Assuming courseTestData is available in course
     const { courseTestData } = course;
+
     courseTestData.forEach((testData, index) => {
         if (testData.correctOption === userAnswers[index]) {
             score++;
         }
     });
+
     // Check if the student scored 100%
     const passed = score === courseTestData.length;
+
     if (passed) {
         // Logic to issue a certificate can be added here
         return res.status(200).json({
@@ -115,15 +121,14 @@ exports.evaluateTest = (0, catchAsyncError_1.CatchAsyncError)(async (req, res, n
             passed,
             message: "Congratulations! You've passed the test and can receive your certificate.",
         });
-    }
-    else {
+    } else {
         return res.status(200).json({
             success: false,
             passed,
             message: "You did not pass the test. Please try again.",
         });
     }
-});
+});*/
 // get all courses ---without purchasing
 exports.getAllCourses = (0, catchAsyncError_1.CatchAsyncError)(async (req, res, next) => {
     try {

@@ -96,7 +96,7 @@ export const getSingleCourse = CatchAsyncError(async (req: Request, res: Respons
     }
 });
 
-export const evaluateTest = CatchAsyncError(async (req: Request, res: Response, next: NextFunction) => {
+/*export const evaluateTest = CatchAsyncError(async (req: Request, res: Response, next: NextFunction) => {
     const { courseId, userAnswers } = req.body;
 
     const course = await CourseModel.findById(courseId);
@@ -132,7 +132,7 @@ export const evaluateTest = CatchAsyncError(async (req: Request, res: Response, 
             message: "You did not pass the test. Please try again.",
         });
     }
-});
+});*/
 
 // get all courses ---without purchasing
 export const getAllCourses = CatchAsyncError(async (req: Request, res: Response, next: NextFunction) => {
