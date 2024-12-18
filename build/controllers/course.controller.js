@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.generateVideoUrl = exports.deleteCourse = exports.getAllCoursesByAdmin = exports.addReplyToReview = exports.addReview = exports.addAnswer = exports.addQuestion = exports.getCourseByUser = exports.getAllCourses = exports.getSingleCourse = exports.editCourse = exports.uploadCourse = void 0;
+exports.generateVideoUrl = exports.deleteCourseManager = exports.deleteCourse = exports.getAllCoursesManager = exports.getAllCoursesByAdmin = exports.addReplyToReview = exports.addReview = exports.addAnswer = exports.addQuestion = exports.getCourseByUser = exports.getAllCourses = exports.getSingleCourse = exports.editCourseManager = exports.editCourse = exports.uploadCourseManager = exports.uploadCourse = void 0;
 const catchAsyncError_1 = require("../middleware/catchAsyncError");
 const ErrorHandler_1 = __importDefault(require("../utils/ErrorHandler"));
 const cloudinary_1 = __importDefault(require("cloudinary"));
@@ -35,8 +35,65 @@ exports.uploadCourse = (0, catchAsyncError_1.CatchAsyncError)(async (req, res, n
         return next(new ErrorHandler_1.default(error.message, 500));
     }
 });
+// upload course for manager
+exports.uploadCourseManager = (0, catchAsyncError_1.CatchAsyncError)(async (req, res, next) => {
+    try {
+        const data = req.body;
+        const thumbnail = data.thumbnail;
+        if (thumbnail) {
+            const myCloud = await cloudinary_1.default.v2.uploader.upload(thumbnail, {
+                folder: "courses"
+            });
+            data.thumbnail = {
+                public_id: myCloud.public_id,
+                url: myCloud.secure_url
+            };
+        }
+        (0, course_service_1.createCourse)(data, res, next);
+    }
+    catch (error) {
+        return next(new ErrorHandler_1.default(error.message, 500));
+    }
+});
 //edit course
 exports.editCourse = (0, catchAsyncError_1.CatchAsyncError)(async (req, res, next) => {
+    try {
+        const data = req.body;
+        const thumbnail = data.thumbnail;
+        const courseId = req.params.id;
+        const courseData = await course_model_1.default.findById(courseId);
+        if (thumbnail && !thumbnail.startsWith("https")) {
+            await cloudinary_1.default.v2.uploader.destroy(courseData.thumbnail.public_id);
+            const myCloud = await cloudinary_1.default.v2.uploader.upload(thumbnail, {
+                folder: "courses",
+            });
+            data.thumbnail = {
+                public_id: myCloud.public_id,
+                url: myCloud.secure_url,
+            };
+        }
+        if (thumbnail.startsWith("https")) {
+            data.thumbnail = {
+                public_id: courseData?.thumbnail.public_id,
+                url: courseData?.thumbnail.url,
+            };
+        }
+        const course = await course_model_1.default.findByIdAndUpdate(courseId, {
+            $set: data,
+        }, {
+            new: true
+        });
+        res.status(201).json({
+            success: true,
+            course,
+        });
+    }
+    catch (error) {
+        return next(new ErrorHandler_1.default(error.message, 500));
+    }
+});
+//edit course for manager
+exports.editCourseManager = (0, catchAsyncError_1.CatchAsyncError)(async (req, res, next) => {
     try {
         const data = req.body;
         const thumbnail = data.thumbnail;
@@ -343,8 +400,35 @@ exports.getAllCoursesByAdmin = (0, catchAsyncError_1.CatchAsyncError)(async (req
         return next(new ErrorHandler_1.default(error.message, 400));
     }
 });
+// get all courses --- only for manager
+exports.getAllCoursesManager = (0, catchAsyncError_1.CatchAsyncError)(async (req, res, next) => {
+    try {
+        (0, course_service_1.getAllCoursesService)(res);
+    }
+    catch (error) {
+        return next(new ErrorHandler_1.default(error.message, 400));
+    }
+});
 // delete course ---- only for admin
 exports.deleteCourse = (0, catchAsyncError_1.CatchAsyncError)(async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const course = await course_model_1.default.findById(id);
+        if (!course) {
+            return next(new ErrorHandler_1.default("Course not found", 404));
+        }
+        await course.deleteOne({ _id: id });
+        res.status(200).json({
+            success: true,
+            message: "Course deleted successfully"
+        });
+    }
+    catch (error) {
+        return next(new ErrorHandler_1.default(error.message, 400));
+    }
+});
+// delete course ---- only for manager
+exports.deleteCourseManager = (0, catchAsyncError_1.CatchAsyncError)(async (req, res, next) => {
     try {
         const { id } = req.params;
         const course = await course_model_1.default.findById(id);

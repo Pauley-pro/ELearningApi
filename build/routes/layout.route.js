@@ -8,6 +8,8 @@ const auth_1 = require("../middleware/auth");
 const layout_controller_1 = require("../controllers/layout.controller");
 const layoutRouter = express_1.default.Router();
 layoutRouter.post("/create-layout", auth_1.isAuthenticated, (0, auth_1.authorizeRoles)("admin"), layout_controller_1.createLayout);
+layoutRouter.post("/create-layout-manager", auth_1.isAuthenticated, (0, auth_1.authorizeRoles)("manager"), layout_controller_1.createLayoutManager);
 layoutRouter.put("/edit-layout", auth_1.isAuthenticated, (0, auth_1.authorizeRoles)("admin"), layout_controller_1.editLayout);
+layoutRouter.put("/edit-layout-manager", auth_1.isAuthenticated, (0, auth_1.authorizeRoles)("manager"), layout_controller_1.editLayoutManager);
 layoutRouter.get("/get-layout/:type", layout_controller_1.getLayoutByType);
 exports.default = layoutRouter;

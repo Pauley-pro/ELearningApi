@@ -24,7 +24,7 @@ exports.app.use((0, cookie_parser_1.default)());
 // cors => cross origin resource sharing
 exports.app.use((0, cors_1.default)({
     origin: "https://e-learning-client-phi.vercel.app",
-    //origin: "http://localhost:3000",
+    // origin: "http://localhost:3000",
     credentials: true,
 }));
 // api request limit
