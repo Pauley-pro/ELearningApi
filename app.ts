@@ -21,8 +21,9 @@ app.use(cookieParser());
 
 // cors => cross origin resource sharing
 const corsOptions = {
-    origin: "https://e-learning-client-phi.vercel.app",
+    // origin: "https://e-learning-client-phi.vercel.app",
     // origin: "http://localhost:3000",
+    origin: "http://mindzyte.com",
     credentials: true,
 };
 

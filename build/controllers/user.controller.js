@@ -109,7 +109,6 @@ exports.loginUser = (0, catchAsyncError_1.CatchAsyncError)(async (req, res, next
         (0, jwt_1.sendToken)(user, 200, res);
     }
     catch (error) {
-        ``;
         return next(new ErrorHandler_1.default(error.message, 400));
     }
 });

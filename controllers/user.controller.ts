@@ -205,7 +205,7 @@ export const getUserInfo = CatchAsyncError(async (req: Request, res: Response, n
     } catch (error: any) {
         return next(new ErrorHandler(error.message, 400));
     }
-})
+});
 
 interface ISocialAuthBody {
     email: string;
