@@ -23,7 +23,7 @@ app.use(cookieParser());
 const corsOptions = {
     // origin: "https://e-learning-client-phi.vercel.app",
     // origin: "http://localhost:3000",
-    origin: "http://mindzyte.com",
+    origin: "https://www.mindzyte.com",
     credentials: true,
 };
 
