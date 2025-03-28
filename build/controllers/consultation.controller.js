@@ -9,6 +9,7 @@ const ErrorHandler_1 = __importDefault(require("../utils/ErrorHandler"));
 const consultation_model_1 = __importDefault(require("../models/consultation.model"));
 const user_model_1 = __importDefault(require("../models/user.model"));
 const HandleMail_1 = __importDefault(require("../utils/HandleMail"));
+const notification_model_1 = __importDefault(require("../models/notification.model"));
 // User booking appointment
 exports.bookAppointment = (0, catchAsyncError_1.CatchAsyncError)(async (req, res, next) => {
     const userId = req.user?._id;
@@ -37,6 +38,11 @@ exports.bookAppointment = (0, catchAsyncError_1.CatchAsyncError)(async (req, res
         status: "pending",
     });
     await appointment.save();
+    await notification_model_1.default.create({
+        user: user?._id,
+        title: "New Appointment",
+        message: `You have a new appointment from ${user?.name}`,
+    });
     const adminEmail = process.env.ADMIN_EMAIL;
     if (!adminEmail) {
         console.error("Admin email not defined in environment variables");

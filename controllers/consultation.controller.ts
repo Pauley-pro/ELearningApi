@@ -9,6 +9,7 @@ import userModel from "../models/user.model";
 import mongoose from "mongoose";
 import mjml2html from "mjml";
 import HandleMail from "../utils/HandleMail";
+import NotificationModel from "../models/notification.model";
 
 // User booking appointment
 export const bookAppointment = CatchAsyncError(async (req: Request, res: Response, next: NextFunction) => {
@@ -45,6 +46,11 @@ export const bookAppointment = CatchAsyncError(async (req: Request, res: Respons
     });
 
     await appointment.save();
+    await NotificationModel.create({
+        user: user?._id,
+        title: "New Appointment",
+        message: `You have a new appointment from ${user?.name}`,
+    });
 
     const adminEmail = process.env.ADMIN_EMAIL;
 
@@ -380,4 +386,3 @@ export const updateAppointmentStatus = CatchAsyncError(async (req: Request, res:
         appointment,
     });
 });
-
