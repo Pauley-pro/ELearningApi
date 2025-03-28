@@ -11,6 +11,7 @@ import notificationRouter from "./routes/notification.route";
 import analyticsRouter from "./routes/analytics.route";
 import layoutRouter from "./routes/layout.route";
 import { rateLimit } from "express-rate-limit";
+import consultationRouter from "./routes/consultation.route";
 
 
 // body parser
@@ -46,7 +47,16 @@ const limiter = rateLimit({
 })
 
 // routes
-app.use("/api/v1", userRouter, courseRouter, orderRouter, notificationRouter, analyticsRouter, layoutRouter);
+app.use(
+    "/api/v1",
+    userRouter,
+    courseRouter,
+    orderRouter,
+    notificationRouter,
+    analyticsRouter,
+    layoutRouter,
+    consultationRouter
+);
 
 
 // testing api
