@@ -21,39 +21,22 @@ interface IRegistrationBody {
     isVerified?: boolean;
 }
 
-export const registrationUser = CatchAsyncError(async (req: Request, res: Response, next: NextFunction) => {
+export const testEmail = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const { name, email, password } = req.body as IRegistrationBody;
-
-        // Check if the email already exists
-        const isEmailExist = await userModel.findOne({ email });
-        if (isEmailExist) {
-            return next(new ErrorHandler("Email already exists", 400));
-        }
-
-        // Prepare user data
-        const userData: IRegistrationBody = {
-            name,
-            email,
-            password,
-            isVerified: true, // Set user as verified immediately
-        };
-
-        // Create user
-        const user = await userModel.create(userData);
-
-        res.status(201).json({
-            success: true,
-            message: "Account created successfully!",
-            user,
+        await sendMail({
+            email: "admin@mindzyte.com",
+            subject: "Test Email",
+            template: "activation-mail.ejs", // or just raw HTML for testing
+            data: { user: { name: "Test User" }, activationCode: "1234" }
         });
 
+        res.status(200).json({ success: true, message: "Test email sent successfully" });
     } catch (error: any) {
         return next(new ErrorHandler(error.message, 400));
     }
-});
+};
 
-/*export const registrationUser = CatchAsyncError(async (req: Request, res: Response, next: NextFunction) => {
+export const registrationUser = CatchAsyncError(async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { name, email, password } = req.body;
 
@@ -92,7 +75,7 @@ export const registrationUser = CatchAsyncError(async (req: Request, res: Respon
     catch (error: any) {
         return next(new ErrorHandler(error.message, 400));
     }
-});*/
+});
 
 interface IActivationToken {
     token: string;

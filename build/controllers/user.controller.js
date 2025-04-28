@@ -3,37 +3,66 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteUser = exports.updateUserRole = exports.getAllUsers = exports.updateProfilePicture = exports.updatePassword = exports.updateUserInfo = exports.socialAuth = exports.getUserInfo = exports.UpdateAccessToken = exports.logoutUser = exports.loginUser = exports.activateUser = exports.createActivationToken = exports.registrationUser = void 0;
+exports.deleteUser = exports.updateUserRole = exports.getAllUsers = exports.updateProfilePicture = exports.updatePassword = exports.updateUserInfo = exports.socialAuth = exports.getUserInfo = exports.UpdateAccessToken = exports.logoutUser = exports.loginUser = exports.activateUser = exports.createActivationToken = exports.registrationUser = exports.testEmail = void 0;
 require('dotenv').config();
 const user_model_1 = __importDefault(require("../models/user.model"));
 const ErrorHandler_1 = __importDefault(require("../utils/ErrorHandler"));
 const catchAsyncError_1 = require("../middleware/catchAsyncError");
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
+const ejs_1 = __importDefault(require("ejs"));
+const path_1 = __importDefault(require("path"));
+const sendMail_1 = __importDefault(require("../utils/sendMail"));
 const jwt_1 = require("../utils/jwt");
 const user_service_1 = require("../services/user.service");
 const cloudinary_1 = __importDefault(require("cloudinary"));
+const testEmail = async (req, res, next) => {
+    try {
+        await (0, sendMail_1.default)({
+            email: "admin@mindzyte.com",
+            subject: "Test Email",
+            template: "activation-mail.ejs",
+            data: { user: { name: "Test User" }, activationCode: "1234" }
+        });
+        res.status(200).json({ success: true, message: "Test email sent successfully" });
+    }
+    catch (error) {
+        return next(new ErrorHandler_1.default(error.message, 400));
+    }
+};
+exports.testEmail = testEmail;
 exports.registrationUser = (0, catchAsyncError_1.CatchAsyncError)(async (req, res, next) => {
     try {
         const { name, email, password } = req.body;
-        // Check if the email already exists
         const isEmailExist = await user_model_1.default.findOne({ email });
         if (isEmailExist) {
-            return next(new ErrorHandler_1.default("Email already exists", 400));
+            return next(new ErrorHandler_1.default("Email already exist", 400));
         }
-        // Prepare user data
-        const userData = {
+        ;
+        const user = {
             name,
             email,
             password,
-            isVerified: true, // Set user as verified immediately
         };
-        // Create user
-        const user = await user_model_1.default.create(userData);
-        res.status(201).json({
-            success: true,
-            message: "Account created successfully!",
-            user,
-        });
+        const activationToken = (0, exports.createActivationToken)(user);
+        const activationCode = activationToken.activationCode;
+        const data = { user: { name: user.name }, activationCode };
+        const html = await ejs_1.default.renderFile(path_1.default.join(__dirname, "../mails/activation-mail.ejs"), data);
+        try {
+            await (0, sendMail_1.default)({
+                email: user.email,
+                subject: "Activate your account",
+                template: "activation-mail.ejs",
+                data,
+            });
+            res.status(201).json({
+                success: true,
+                message: `Please, check your email: ${user.email} to activate your account!`,
+                activationToken: activationToken.token,
+            });
+        }
+        catch (error) {
+            return next(new ErrorHandler_1.default(error.message, 400));
+        }
     }
     catch (error) {
         return next(new ErrorHandler_1.default(error.message, 400));
