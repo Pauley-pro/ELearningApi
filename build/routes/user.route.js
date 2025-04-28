@@ -7,7 +7,7 @@ const express_1 = __importDefault(require("express"));
 const user_controller_1 = require("../controllers/user.controller");
 const auth_1 = require("../middleware/auth");
 const userRouter = express_1.default.Router();
-userRouter.post("test-mail", user_controller_1.testEmail);
+userRouter.get("test-mail", user_controller_1.testEmail);
 userRouter.post("/registration", user_controller_1.registrationUser);
 userRouter.post("/activate-user", user_controller_1.activateUser);
 userRouter.post("/login", user_controller_1.loginUser);
