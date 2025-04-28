@@ -3,7 +3,7 @@ import { activateUser, deleteUser, getAllUsers, getUserInfo, loginUser, logoutUs
 import { authorizeRoles, isAuthenticated } from "../middleware/auth";
 const userRouter = express.Router();
 
-userRouter.get("test-mail", testEmail);
+userRouter.get("/test-mail", testEmail);
 userRouter.post("/registration", registrationUser);
 userRouter.post("/activate-user", activateUser);
 userRouter.post("/login", loginUser);
