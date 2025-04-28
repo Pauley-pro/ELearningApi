@@ -18,6 +18,7 @@ interface IRegistrationBody {
     email: string;
     password: string;
     avatar?: string;
+    isVerified?: boolean;
 }
 
 export const registrationUser = CatchAsyncError(async (req: Request, res: Response, next: NextFunction) => {
@@ -104,6 +105,7 @@ export const activateUser = CatchAsyncError(async (req: Request, res: Response, 
             name,
             email,
             password,
+            isVerified: true
         });
         res.status(201).json({
             success: true,

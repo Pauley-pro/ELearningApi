@@ -80,6 +80,7 @@ exports.activateUser = (0, catchAsyncError_1.CatchAsyncError)(async (req, res, n
             name,
             email,
             password,
+            isVerified: true
         });
         res.status(201).json({
             success: true,
