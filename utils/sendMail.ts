@@ -1,3 +1,4 @@
+/*
 require('dotenv').config();
 import nodeMailer, { Transporter } from "nodemailer";
 import ejs from "ejs";
@@ -51,9 +52,9 @@ const sendMail = async (options: EmailOptions): Promise<void> => {
 };
 
 export default sendMail;
+*/
 
 
-/*
 require('dotenv').config();
 import nodeMailer, {Transporter} from "nodemailer";
 import ejs from "ejs";
@@ -95,4 +96,3 @@ const sendMail = async (options: EmailOptions):Promise <void> => {
 };
 
 export default sendMail;
-*/
